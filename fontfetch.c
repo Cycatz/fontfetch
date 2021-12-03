@@ -101,17 +101,17 @@ void print_glyph_info(uint32_t charcode, FT_GlyphSlot glyph)
                VALUE_TYPE_LONGINT);
     print_line("Height", (const void *) glyph->metrics.height,
                VALUE_TYPE_LONGINT);
-    print_line("HoriBearingX", (const void *) glyph->metrics.horiBearingX,
+    print_line("Horizontal Advance", (const void *) glyph->metrics.horiAdvance,
                VALUE_TYPE_LONGINT);
-    print_line("HoriBearingY", (const void *) glyph->metrics.horiBearingY,
+    print_line("Horizontal BearingX",
+               (const void *) glyph->metrics.horiBearingX, VALUE_TYPE_LONGINT);
+    print_line("Horizontal BearingY",
+               (const void *) glyph->metrics.horiBearingY, VALUE_TYPE_LONGINT);
+    print_line("Vertical Advance", (const void *) glyph->metrics.vertAdvance,
                VALUE_TYPE_LONGINT);
-    print_line("HoriAdvance", (const void *) glyph->metrics.horiAdvance,
+    print_line("Vertical BearingX", (const void *) glyph->metrics.vertBearingX,
                VALUE_TYPE_LONGINT);
-    print_line("VertBearingX", (const void *) glyph->metrics.vertBearingX,
-               VALUE_TYPE_LONGINT);
-    print_line("VertBearingY", (const void *) glyph->metrics.vertBearingY,
-               VALUE_TYPE_LONGINT);
-    print_line("VertAdvance", (const void *) glyph->metrics.vertAdvance,
+    print_line("Vertical BearingY", (const void *) glyph->metrics.vertBearingY,
                VALUE_TYPE_LONGINT);
 }
 
