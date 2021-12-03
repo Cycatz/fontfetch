@@ -68,6 +68,9 @@ void print_font_info()
     print_line("Number of glyphs", (const void *) face->num_glyphs,
                VALUE_TYPE_LONGINT);
 
+    print_line("Units per EM", (const void *) face->units_per_EM,
+               VALUE_TYPE_INT);
+
     /* Pass integer as pointer */
     print_line("Outline glyphs",
                (const void *) (face->face_flags & FT_FACE_FLAG_SCALABLE),
