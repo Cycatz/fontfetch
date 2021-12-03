@@ -72,26 +72,22 @@ void print_font_info()
                VALUE_TYPE_INT);
 
     /* Pass integer as pointer */
-    print_line("Outline glyphs",
-               (const void *) (face->face_flags & FT_FACE_FLAG_SCALABLE),
+    /* TODO: use marco to check, ref:
+     * https://freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_has_horizontal
+     */
+    print_line("Outline glyphs", (const void *) FT_IS_SCALABLE(face),
                VALUE_TYPE_AVAIL);
-    print_line("Bitmap glyphs",
-               (const void *) (face->face_flags & FT_FACE_FLAG_FIXED_SIZES),
+    print_line("Bitmap glyphs", (const void *) FT_HAS_FIXED_SIZES(face),
                VALUE_TYPE_AVAIL);
-    print_line("Fixed width",
-               (const void *) (face->face_flags & FT_FACE_FLAG_FIXED_WIDTH),
+    print_line("Fixed width", (const void *) FT_IS_FIXED_WIDTH(face),
                VALUE_TYPE_YESNO);
-    print_line("Horizontal metrics",
-               (const void *) (face->face_flags & FT_FACE_FLAG_HORIZONTAL),
+    print_line("Horizontal metrics", (const void *) FT_HAS_HORIZONTAL(face),
                VALUE_TYPE_AVAIL);
-    print_line("Vertical metrics",
-               (const void *) (face->face_flags & FT_FACE_FLAG_VERTICAL),
+    print_line("Vertical metrics", (const void *) FT_HAS_VERTICAL(face),
                VALUE_TYPE_AVAIL);
-    print_line("Kerning info",
-               (const void *) (face->face_flags & FT_FACE_FLAG_KERNING),
+    print_line("Kerning info", (const void *) FT_HAS_KERNING(face),
                VALUE_TYPE_AVAIL);
-    print_line("Color", (const void *) (face->face_flags & FT_FACE_FLAG_COLOR),
-               VALUE_TYPE_AVAIL);
+    print_line("Color", (const void *) FT_HAS_COLOR(face), VALUE_TYPE_AVAIL);
 }
 
 void print_glyph_info(uint32_t charcode, FT_GlyphSlot glyph)
