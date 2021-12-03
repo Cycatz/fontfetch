@@ -1,4 +1,6 @@
 #include <ft2build.h>
+#include <getopt.h>
+#include <stdint.h>
 #include <stdio.h>
 #include FT_FREETYPE_H
 
@@ -19,6 +21,10 @@
 #define VALUE_TYPE_LONGINT (1 << 4)
 
 
+static FT_Library library;
+static FT_Face face;
+
+
 void print_line(const char *field, const void *value, int value_type)
 {
 #define YESNO(x) \
@@ -37,8 +43,11 @@ void print_line(const char *field, const void *value, int value_type)
     case VALUE_TYPE_STR:
         printf(COLOR_BOLD "%s\n" COLOR_RESET, (const char *) value);
         break;
+    case VALUE_TYPE_INT:
+        printf(COLOR_BOLD "%d\n" COLOR_RESET, (int) value);
+        break;
     case VALUE_TYPE_LONGINT:
-        printf(COLOR_BOLD "%ld\n" COLOR_RESET, *(const long int *) value);
+        printf(COLOR_BOLD "%ld\n" COLOR_RESET, (long int) value);
         break;
     case VALUE_TYPE_AVAIL:
         printf("%s\n", AVAIL(value));
@@ -48,14 +57,16 @@ void print_line(const char *field, const void *value, int value_type)
         break;
     }
 }
-void print_font_info(FT_Face face)
+
+void print_font_info()
 {
     printf("==================== Font ====================\n");
 
     /* Access FT_FaceRec */
-    print_line("Family name", face->family_name, VALUE_TYPE_STR);
-    print_line("Style name", face->style_name, VALUE_TYPE_STR);
-    print_line("Number of glyphs", &face->num_glyphs, VALUE_TYPE_LONGINT);
+    print_line("Width", face->family_name, VALUE_TYPE_STR);
+    print_line("Height", face->style_name, VALUE_TYPE_STR);
+    print_line("Number of glyphs", (const void *) face->num_glyphs,
+               VALUE_TYPE_LONGINT);
 
     /* Pass integer as pointer */
     print_line("Outline glyphs",
@@ -80,12 +91,34 @@ void print_font_info(FT_Face face)
                VALUE_TYPE_AVAIL);
 }
 
+void print_glyph_info(uint32_t charcode, FT_GlyphSlot glyph)
+{
+    printf("=================== Glyph ===================\n");
+
+    print_line("Char code", (const void *) charcode, VALUE_TYPE_INT);
+    print_line("Glyph index", (const void *) glyph->glyph_index,
+               VALUE_TYPE_INT);
+    print_line("Width", (const void *) glyph->metrics.width,
+               VALUE_TYPE_LONGINT);
+    print_line("Height", (const void *) glyph->metrics.height,
+               VALUE_TYPE_LONGINT);
+    print_line("HoriBearingX", (const void *) glyph->metrics.horiBearingX,
+               VALUE_TYPE_LONGINT);
+    print_line("HoriBearingY", (const void *) glyph->metrics.horiBearingY,
+               VALUE_TYPE_LONGINT);
+    print_line("HoriAdvance", (const void *) glyph->metrics.horiAdvance,
+               VALUE_TYPE_LONGINT);
+    print_line("VertBearingX", (const void *) glyph->metrics.vertBearingX,
+               VALUE_TYPE_LONGINT);
+    print_line("VertBearingY", (const void *) glyph->metrics.vertBearingY,
+               VALUE_TYPE_LONGINT);
+    print_line("VertAdvance", (const void *) glyph->metrics.vertAdvance,
+               VALUE_TYPE_LONGINT);
+}
+
 void read_font(const char *filename)
 {
-    FT_Library library;
-    FT_Face face;
     FT_Error error;
-
 
     error = FT_Init_FreeType(&library);
     if (error) {
@@ -102,15 +135,71 @@ void read_font(const char *filename)
         exit(EXIT_FAILURE);
     }
 
-    print_font_info(face);
+    print_font_info();
+}
+
+void read_glyph(uint32_t charcode)
+{
+    FT_Error error;
+    FT_UInt glyph_index;
+
+    glyph_index = FT_Get_Char_Index(face, charcode);
+    error = FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_SCALE);
+
+    if (error) {
+        fprintf(stderr, "Unknown error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    print_glyph_info(charcode, face->glyph);
+}
+
+
+void usage(const char *prog_name)
+{
+    fprintf(stderr, "Usage: %s -f <file> [-c char]\n", prog_name);
 }
 
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <font file>\n", argv[0]);
+    int opt;
+    char *file_path = NULL;
+    char *glyph_char = NULL;
+
+    while ((opt = getopt(argc, argv, "f:c:h")) != -1) {
+        switch (opt) {
+        case 'f':
+            file_path = optarg;
+            break;
+        case 'c':
+            glyph_char = optarg;
+            break;
+        case 'h':
+            usage(*argv);
+            exit(EXIT_SUCCESS);
+        case '?':
+            fprintf(stderr, "Unknown option: %c\n", optopt);
+            usage(*argv);
+            exit(EXIT_FAILURE);
+        case ':':
+            fprintf(stderr, "Missing arg for %c\n", optopt);
+            usage(*argv);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (!file_path) {
+        usage(*argv);
         exit(EXIT_FAILURE);
     }
-    read_font(argv[1]);
+
+
+    if (file_path)
+        read_font(file_path);
+    if (glyph_char)
+        read_glyph(glyph_char[0]);
+
+
+    return 0;
 }
